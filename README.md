@@ -55,7 +55,7 @@ query: "select count(*) as count from shell_history"
 valueidentifier: count
 ```
 
-It's up to the user to decide if the osquery query result is a counter or gauge. Further information about metric types and labeling recommendations can be found on
+It's up to the user to decide if the osquery query result is a counter or gauge. Further information about metric types and labeling recommendations can be found at
 - https://prometheus.io/docs/concepts/metric_types/
 - https://prometheus.io/docs/practices/naming/
 
