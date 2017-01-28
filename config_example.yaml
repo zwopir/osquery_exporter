@@ -1,0 +1,45 @@
+---
+runtime:
+  osquery: "osqueryi"
+  timeout: 1s
+
+metrics:
+  counters:
+    -
+      name: history_lines_count
+      help: "number of entries in the history"
+      query: "select count(*) as count from shell_history"
+      valueidentifier: count
+  countervecs:
+    -
+      name: last_users_count
+      help: "number of last logins by username and tty"
+      query: "select username, tty, count(*) as count from last where username != '' group by username;"
+      valueidentifier: count
+      labelidentifier:
+        - username
+        - tty
+  gauges:
+    -
+      name: block_devices
+      help: "number of block devices which are not partitions"
+      query: "select count(*) as count from block_devices where parent = '';"
+      valueidentifier: count
+    -
+      name: crontab_entries
+      help: "number of entries in the crontab"
+      query: "select count(*) as count from crontab;"
+      valueidentifier: count
+  gaugevecs:
+    -
+      name: users_by_shell
+      help: "number of users by login shell"
+      query:  select count(*) as count, shell from users group by shell;
+      valueidentifier: count
+      labelidentifier:
+        - shell
+
+## implicit metrics
+# success
+# number of results
+# querytime histogram
