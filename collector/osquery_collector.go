@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/log"
-	"osquery_exporter/model"
-	"osquery_exporter/osquery"
+	"github.com/zwopir/osquery_exporter/model"
+	"github.com/zwopir/osquery_exporter/osquery"
 	"strconv"
 	"sync"
 )

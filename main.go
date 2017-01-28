@@ -5,9 +5,9 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/log"
 	"gopkg.in/yaml.v2"
-	"osquery_exporter/collector"
-	"osquery_exporter/model"
-	"osquery_exporter/osquery"
+	"github.com/zwopir/osquery_exporter/collector"
+	"github.com/zwopir/osquery_exporter/model"
+	"github.com/zwopir/osquery_exporter/osquery"
 
 	"flag"
 	"io/ioutil"
@@ -17,7 +17,7 @@ import (
 func main() {
 	var (
 		configFile    = flag.String("config.file", "config.yaml", "Config file")
-		listenAddress = flag.String("web.listen-address", ":9100", "Address on which to expose metrics and web interface.")
+		listenAddress = flag.String("web.listen-address", ":9232", "Address on which to expose metrics and web interface.")
 		metricsPath   = flag.String("web.telemetry-path", "/metrics", "Path under which to expose metrics.")
 	)
 	flag.Parse()
