@@ -1,7 +1,7 @@
 ---
 runtime:
   osquery: "osqueryi"
-  timeout: 1s
+  timeout: 10s
 
 metrics:
   counters:
