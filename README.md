@@ -12,6 +12,21 @@ go build
 
 ## Configuration
 The exporter can be configured via configuration file and commandline parameters.
+
+```
+Usage of ./osquery_exporter:
+  -config.file string
+    	Config file (default "config.yaml")
+  -log.format value
+    	Set the log target and format. Example: "logger:syslog?appname=bob&local=7" or "logger:stdout?json=true" (default "logger:stderr")
+  -log.level value
+    	Only log messages with the given severity or above. Valid levels: [debug, info, warn, error, fatal] (default "info")
+  -web.listen-address string
+    	Address on which to expose metrics and web interface. (default ":9232")
+  -web.telemetry-path string
+    	Path under which to expose metrics. (default "/metrics")
+```
+
 The configuration file is mandatory, whereas the commandline parameters are optional and have resonable default values
 
 The configuration file (YAML) defines the queries that are run via osqueryi.
@@ -71,3 +86,9 @@ valueidentifier: count
 labelidentifier:
   - shell
 ```
+
+### Implicit metrics
+In addition to the defined metrics defined via the configuration file, osquery_exporter implicitly creates metrics for
+- query duration (type summaryvec with a label "name")
+- query status (type gaugevec with a label "name"). A value of 0 indicates an error (including timeout), 1 indicates success.
+- number of result sets (SQL lines) per query (type gaugevec with a label "name")
