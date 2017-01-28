@@ -10,11 +10,14 @@ import (
 	"time"
 )
 
+// OsqueryRunner represents a command runner for osquery
 type OsqueryRunner struct {
 	executable string
 	timeout    time.Duration
 }
 
+// NewRunner creates a new runner. The executable is looked up in $PATH if not provided as an absolute path
+// timeout must be time.ParseDuration`able.
 func NewRunner(executable, timeout string) (*OsqueryRunner, error) {
 	to, err := time.ParseDuration(timeout)
 	if err != nil {
@@ -32,6 +35,8 @@ func NewRunner(executable, timeout string) (*OsqueryRunner, error) {
 	}, nil
 }
 
+// Run runs the provided query. The command invocation is cancelled with SIGKILL after
+// timeout
 func (runner *OsqueryRunner) Run(query string) (*model.OsqueryResult, error) {
 	var items []model.OsqueryItem
 	begin := time.Now()

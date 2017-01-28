@@ -10,6 +10,7 @@ import (
 	"sync"
 )
 
+// singleQueryCollector represents a metric/query definition for a single osquery call
 type singleQueryCollector interface {
 	String() string
 	Id() string
@@ -20,9 +21,9 @@ type singleQueryCollector interface {
 	Labels() []string
 }
 
+// update maps the osquery query result to the singleQueryCollector and updates the provided channel accordingly
 func update(sqc singleQueryCollector, result *model.OsqueryResult, ch chan<- prometheus.Metric) error {
 	log.Debugf("updating metric %q", sqc.String())
-
 	for _, item := range result.Items {
 		value, ok := item[sqc.Value()]
 		if !ok {
@@ -50,6 +51,8 @@ func update(sqc singleQueryCollector, result *model.OsqueryResult, ch chan<- pro
 	return nil
 }
 
+// OsqueryCollector represents a collector that collects metrics from a set of osquery queries. It implements
+// prometheus Collector
 type OsqueryCollector struct {
 	runner         *osquery.OsqueryRunner
 	collectors     map[string]singleQueryCollector
@@ -58,6 +61,7 @@ type OsqueryCollector struct {
 	resultsets     *prometheus.GaugeVec
 }
 
+// NewOsqueryCollector creates an OsQueryCollector from a given osquery-runner and a set of metric definitions
 func NewOsqueryCollector(r *osquery.OsqueryRunner, m model.Metrics) *OsqueryCollector {
 	collectors := make(map[string]singleQueryCollector)
 	for _, c := range m.Counters {
@@ -105,12 +109,14 @@ func NewOsqueryCollector(r *osquery.OsqueryRunner, m model.Metrics) *OsqueryColl
 	}
 }
 
+// Describe implements prometheus.Collector
 func (c *OsqueryCollector) Describe(ch chan<- *prometheus.Desc) {
 	c.queryDurations.Describe(ch)
 	c.success.Describe(ch)
 	c.resultsets.Describe(ch)
 }
 
+// Collect implements prometheus.Collector
 func (c *OsqueryCollector) Collect(ch chan<- prometheus.Metric) {
 	wg := sync.WaitGroup{}
 	wg.Add(len(c.collectors))

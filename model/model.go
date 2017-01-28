@@ -8,16 +8,19 @@ import (
 
 const namespace = "osquery_exporter"
 
+// Config represents a osquery_exporter configuration
 type Config struct {
 	OsQueryRuntime OsQueryRuntime `yaml:"runtime"`
 	Metrics        Metrics        `yaml:"metrics"`
 }
 
+// OsQueryRuntime holds the information for the osquery binary and command invocation
 type OsQueryRuntime struct {
 	Binary  string `yaml:"osquery"`
 	Timeout string `yaml:"timeout"`
 }
 
+// Metrics holds the metric definitions that are converted to prometheus metrics
 type Metrics struct {
 	Counters    []Counter    `yaml:"counters"`
 	CounterVecs []CounterVec `yaml:"countervecs"`
