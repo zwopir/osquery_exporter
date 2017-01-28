@@ -16,7 +16,7 @@ The configuration file is mandatory, whereas the commandline parameters are opti
 
 The configuration file (YAML) defines the queries that are run via osqueryi.
 
-```
+```yaml
 ---
 runtime:
   # osqueryi binary. Looked up in PATH if not specified as absolute path
@@ -42,9 +42,9 @@ There are four types of metrics, that can be exported:
 
 ### counter and gauges
 Counter and gauges are defined as an osquery query that returns a single line with a single element.
-Typical queries are ```select count(*) as c from <table>;```. The resulting column must me named and referenced in the metric definition:
+Typical queries are `select count(*) as c from <table>;`. The resulting column must me named and referenced in the metric definition:
 
-```
+```yaml
 # name of the metric. Directly exported to prometheus (but prefixed with osquery_exporter_).
 name: history_lines_count
 # metric help
@@ -63,7 +63,7 @@ It's up to the user to decide if the osquery query result is a counter or gauge.
 counter- and gaugevecs are analog counters and gauges, but the query result can (and should) consist of more than one result set.
 A single result set must contain label columns which are referenced in the metric definition:
 
-```
+```yaml
 name: users_by_shell
 help: "number of users by login shell"
 query:  select count(*) as count, shell from users group by shell;
