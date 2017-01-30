@@ -24,6 +24,10 @@ type singleQueryCollector interface {
 // update maps the osquery query result to the singleQueryCollector and updates the provided channel accordingly
 func update(sqc singleQueryCollector, result *model.OsqueryResult, ch chan<- prometheus.Metric) error {
 	log.Debugf("updating metric %q", sqc.String())
+	// metrics with no labels can only accept one result set
+	if len(sqc.Labels()) == 0 && len(result.Items) > 1 {
+		return fmt.Errorf("metrics with no labels can only accept one result set")
+	}
 	for _, item := range result.Items {
 		value, ok := item[sqc.Value()]
 		if !ok {
@@ -31,7 +35,7 @@ func update(sqc singleQueryCollector, result *model.OsqueryResult, ch chan<- pro
 		}
 		valueAsFloat, err := strconv.ParseFloat(value, 64)
 		if err != nil {
-			fmt.Errorf("query %q result %q can't be converted to float", sqc.Query(), value)
+			return fmt.Errorf("query %q result %q can't be converted to float", sqc.Query(), value)
 		}
 		labels := []string{}
 		for _, labelIdentifier := range sqc.Labels() {
