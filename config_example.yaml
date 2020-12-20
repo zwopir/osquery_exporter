@@ -1,7 +1,15 @@
 ---
+# either define the osqueryi binary to execute queries against
 runtime:
   osquery: "osqueryi"
   timeout: 10s
+  enabled: true
+
+# or define a socket file from a running osqueryd instance
+socket:
+  path: "/var/osquery/osquery.em"
+  timeout: 10s
+  enabled: false
 
 metrics:
   counters:

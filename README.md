@@ -2,9 +2,9 @@
 Exporter for exporting osquery (https://osquery.io) query results to prometheus
 
 ## Installation
-Install osquery from https://osquery.io/downloads/
+Install osquery from https://osquery.io/downloads/ or with your favourite package manager.
 
-Build with go1.7
+Build with go1.15
 ```
 go get github.com/zwopir/osquery_exporter
 go build
@@ -17,19 +17,15 @@ The exporter can be configured via configuration file and commandline parameters
 Usage of ./osquery_exporter:
   -config.file string
     	Config file (default "config.yaml")
-  -log.format value
-    	Set the log target and format. Example: "logger:syslog?appname=bob&local=7" or "logger:stdout?json=true" (default "logger:stderr")
-  -log.level value
-    	Only log messages with the given severity or above. Valid levels: [debug, info, warn, error, fatal] (default "info")
   -web.listen-address string
     	Address on which to expose metrics and web interface. (default ":9232")
   -web.telemetry-path string
     	Path under which to expose metrics. (default "/metrics")
 ```
 
-The configuration file is mandatory, whereas the commandline parameters are optional and have resonable default values
+The configuration file is mandatory, whereas the commandline parameters are optional and have reasonable default values.
 
-The configuration file (YAML) defines the queries that are run via osqueryi.
+The configuration file (YAML) defines the queries that are run either via osqueryi or .
 
 ```yaml
 ---
@@ -38,6 +34,14 @@ runtime:
   osquery: "osqueryi"
   # timeout for a single call to osqueryi
   timeout: 10s
+  # whether this mode is enabled
+  enabled: true
+
+# or define a socket file from a running osqueryd instance
+socket:
+  path: "/var/osquery/osquery.em"
+  timeout: 10s
+  enabled: false
 
 metrics:
   counters:

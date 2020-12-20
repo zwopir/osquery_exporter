@@ -10,7 +10,9 @@ const namespace = "osquery_exporter"
 
 // Config represents a osquery_exporter configuration
 type Config struct {
+	Path           string
 	OsQueryRuntime OsQueryRuntime `yaml:"runtime"`
+	OsQuerySocket  OsQuerySocket  `yaml:"socket"`
 	Metrics        Metrics        `yaml:"metrics"`
 }
 
@@ -18,6 +20,14 @@ type Config struct {
 type OsQueryRuntime struct {
 	Binary  string `yaml:"osquery"`
 	Timeout string `yaml:"timeout"`
+	Enabled bool   `yaml:"enabled"`
+}
+
+// OsQuerySocket holds the information for the osquery socket and command invocation
+type OsQuerySocket struct {
+	Path    string `yaml:"path"`
+	Timeout string `yaml:"timeout"`
+	Enabled bool   `yaml:"enabled"`
 }
 
 // Metrics holds the metric definitions that are converted to prometheus metrics

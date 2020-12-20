@@ -58,7 +58,7 @@ func update(sqc singleQueryCollector, result *model.OsqueryResult, ch chan<- pro
 // OsqueryCollector represents a collector that collects metrics from a set of osquery queries. It implements
 // prometheus Collector
 type OsqueryCollector struct {
-	runner         *osquery.OsqueryRunner
+	runner         osquery.OsqueryRunner
 	collectors     map[string]singleQueryCollector
 	queryDurations *prometheus.SummaryVec
 	success        *prometheus.GaugeVec
@@ -66,7 +66,7 @@ type OsqueryCollector struct {
 }
 
 // NewOsqueryCollector creates an OsQueryCollector from a given osquery-runner and a set of metric definitions
-func NewOsqueryCollector(r *osquery.OsqueryRunner, m model.Metrics) *OsqueryCollector {
+func NewOsqueryCollector(r osquery.OsqueryRunner, m model.Metrics) *OsqueryCollector {
 	collectors := make(map[string]singleQueryCollector)
 	for _, c := range m.Counters {
 		log.Infof("adding %s to OsqueryCollector", c.String())
