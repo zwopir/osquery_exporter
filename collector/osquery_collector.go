@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/log"
-	"github.com/zwopir/osquery_exporter/model"
-	"github.com/zwopir/osquery_exporter/osquery"
+	"osquery_exporter/model"
+	"osquery_exporter/osquery"
 	"strconv"
 	"sync"
+	"time"
 )
 
 // singleQueryCollector represents a metric/query definition for a single osquery call
@@ -63,10 +64,11 @@ type OsqueryCollector struct {
 	queryDurations *prometheus.SummaryVec
 	success        *prometheus.GaugeVec
 	resultsets     *prometheus.GaugeVec
+	throttle       *model.ThrottleState
 }
 
 // NewOsqueryCollector creates an OsQueryCollector from a given osquery-runner and a set of metric definitions
-func NewOsqueryCollector(r *osquery.OsqueryRunner, m model.Metrics) *OsqueryCollector {
+func NewOsqueryCollector(r *osquery.OsqueryRunner, m model.Metrics, t string) *OsqueryCollector {
 	collectors := make(map[string]singleQueryCollector)
 	for _, c := range m.Counters {
 		log.Infof("adding %s to OsqueryCollector", c.String())
@@ -84,6 +86,11 @@ func NewOsqueryCollector(r *osquery.OsqueryRunner, m model.Metrics) *OsqueryColl
 		log.Infof("adding %s to OsqueryCollector", gv.String())
 		collectors[gv.Id()] = gv
 	}
+	ti, err := time.ParseDuration(t)
+	if err != nil {
+		log.Fatalf("could not parse throttle_interval: %s", err)
+	}
+
 	return &OsqueryCollector{
 		runner:     r,
 		collectors: collectors,
@@ -110,6 +117,9 @@ func NewOsqueryCollector(r *osquery.OsqueryRunner, m model.Metrics) *OsqueryColl
 			},
 			[]string{"name"},
 		),
+		throttle: &model.ThrottleState{
+			Interval: ti,
+		},
 	}
 }
 
@@ -122,34 +132,38 @@ func (c *OsqueryCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect implements prometheus.Collector
 func (c *OsqueryCollector) Collect(ch chan<- prometheus.Metric) {
-	wg := sync.WaitGroup{}
-	wg.Add(len(c.collectors))
-	for _, col := range c.collectors {
-		go func(col singleQueryCollector) {
-			defer wg.Done()
-			result, err := c.runner.Run(col.Query())
-			if err != nil {
-				log.Errorf("failed to run query %s: %s", col.Query(), err)
-				c.success.WithLabelValues(col.String()).Set(0.0)
-				return
-			}
-			c.resultsets.WithLabelValues(col.String()).Set(float64(len(result.Items)))
-			err = update(col, result, ch)
-			if err != nil {
-				log.Warnf("metric %s errors on update: %s", col.String(), err)
-				c.success.WithLabelValues(col.String()).Set(0.0)
-				return
-			}
-			log.Debugf("metric %s took %s seconds to run", col.String(), result.Runtime)
-			c.queryDurations.WithLabelValues(col.String()).Observe(
-				result.Runtime.Seconds(),
-			)
-			c.success.WithLabelValues(col.String()).Set(1.0)
-		}(col)
+	c.throttle.Lock.Lock()
+	defer c.throttle.Lock.Unlock()
+	if time.Now().After(c.throttle.LastRun.Add(c.throttle.Interval)) {
+		wg := sync.WaitGroup{}
+		wg.Add(len(c.collectors))
+		for _, col := range c.collectors {
+			go func(col singleQueryCollector) {
+				defer wg.Done()
+				result, err := c.runner.Run(col.Query())
+				if err != nil {
+					log.Errorf("failed to run query %s: %s", col.Query(), err)
+					c.success.WithLabelValues(col.String()).Set(0.0)
+					return
+				}
+				c.resultsets.WithLabelValues(col.String()).Set(float64(len(result.Items)))
+				err = update(col, result, ch)
+				if err != nil {
+					log.Warnf("metric %s errors on update: %s", col.String(), err)
+					c.success.WithLabelValues(col.String()).Set(0.0)
+					return
+				}
+				log.Debugf("metric %s took %s seconds to run", col.String(), result.Runtime)
+				c.queryDurations.WithLabelValues(col.String()).Observe(
+					result.Runtime.Seconds(),
+				)
+				c.success.WithLabelValues(col.String()).Set(1.0)
+			}(col)
+		}
+		c.queryDurations.Collect(ch)
+		c.success.Collect(ch)
+		c.resultsets.Collect(ch)
+		wg.Wait()
+		c.throttle.LastRun = time.Now()
 	}
-	c.queryDurations.Collect(ch)
-	c.success.Collect(ch)
-	c.resultsets.Collect(ch)
-	wg.Wait()
-
 }

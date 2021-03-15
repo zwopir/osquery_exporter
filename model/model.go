@@ -3,6 +3,7 @@ package model
 import (
 	"crypto/md5"
 	"github.com/prometheus/client_golang/prometheus"
+	"sync"
 	"time"
 )
 
@@ -10,8 +11,16 @@ const namespace = "osquery_exporter"
 
 // Config represents a osquery_exporter configuration
 type Config struct {
-	OsQueryRuntime OsQueryRuntime `yaml:"runtime"`
-	Metrics        Metrics        `yaml:"metrics"`
+	OsQueryRuntime   OsQueryRuntime `yaml:"runtime"`
+	Metrics          Metrics        `yaml:"metrics"`
+	ThrottleInterval string         `yaml:"throttle_interval"`
+}
+
+// ThrottleState holds throttle interval configuration and state
+type ThrottleState struct {
+	Lock     sync.Mutex
+	LastRun  time.Time
+	Interval time.Duration
 }
 
 // OsQueryRuntime holds the information for the osquery binary and command invocation

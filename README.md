@@ -39,19 +39,22 @@ runtime:
   # timeout for a single call to osqueryi
   timeout: 10s
 
+# prevent collecting metrics multiple times within this interval
+throttle_interval: 10s
+
 metrics:
   counters:
     # a list of counter definitions
-    [ - <counter definition> ... ]  
+    [ - <counter definition> ... ]
   gauges:
     # a list of gauge definitions
-    [ - <gauge definition> ... ]  
+    [ - <gauge definition> ... ]
   countervecs:
     # a list of countervec definitions
-    [ - <countervec definition> ... ]  
+    [ - <countervec definition> ... ]
   gaugevecs:
     # a list of gaugevec definitions
-    [ - <gaugevec definition> ... ]  
+    [ - <gaugevec definition> ... ]
 ```
 There are four types of metrics, that can be exported:
 
