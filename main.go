@@ -5,9 +5,9 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/log"
 	"gopkg.in/yaml.v2"
-	"github.com/zwopir/osquery_exporter/collector"
-	"github.com/zwopir/osquery_exporter/model"
-	"github.com/zwopir/osquery_exporter/osquery"
+	"osquery_exporter/collector"
+	"osquery_exporter/model"
+	"osquery_exporter/osquery"
 
 	"flag"
 	"io/ioutil"
@@ -44,6 +44,7 @@ func main() {
 	osqueryCollector := collector.NewOsqueryCollector(
 		r,
 		config.Metrics,
+		config.ThrottleInterval,
 	)
 
 	prometheus.MustRegister(osqueryCollector)

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/prometheus/common/log"
 	"os/exec"
-	"github.com/zwopir/osquery_exporter/model"
+	"osquery_exporter/model"
 	"time"
 )
 
